@@ -1,1 +1,5 @@
-Scrapy==2.6.1
+Scrapy~=2.6.1
+PyMySQL~=1.0.2
+SQLAlchemy~=1.4.36
+aiomysql~=0.1.1
+alembic~=1.7.7

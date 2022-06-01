@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+
+  jobaggrv-mysql:
+    image: mysql:8-debian
+    environment:
+      MYSQL_ROOT_PASSWORD: jobaggrv
+      MYSQL_USER: jobaggrv
+      MYSQL_PASSWORD: jobaggrv
+      MYSQL_DATABASE: jobaggrv
+    ports:
+      - 33060:3306
