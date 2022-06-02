@@ -13,60 +13,65 @@ class xpath(object):
     def get_heml(self, url):
         url = 'https://www.python.org/jobs/'
         self.blog += 1
-        hearders = {
+        headers = {
             'User_Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.62 Safari/537.36',
 
             }
-        response = requests.get(url, headers=hearders)
-        p = etree.HTML(response.text)
-        lists = p.xpath('//*[@class="row"]')
+        response = requests.get(url, headers=headers).content.decode('utf-8')
+        p = etree.HTML(response)
+        a_list = p.xpath("//*[@id='content']/div/section/div")
 
         items = {}
         for i in range(1, 21):
-            for li in lists:
-                DetailUrl = li.xpath('//*[@class="listing-company-name"]//a/@href')
-                # 判断空值
+            for a in a_list:
+                JobTitle = p.xpath('//*[@class="listing-company-name"]/a/text()')[i]
+                if JobTitle:
+                    items["JobTitle"] = JobTitle
+                else:
+                    items["DetailUrl"] = None
+                DetailUrl = 'https://www.python.org' + a.xpath('.//@href')[i]
                 if DetailUrl:
-                    items["DetailUrl"] = DetailUrl[i]
+                    items["DetailUrl"] = DetailUrl
                 else:
                     items["DetailUrl"] = None
 
-                JobTitle = li.xpath('//*[@class="listing-company-name"]/a/text()')
-                if JobTitle:
-                    items["JobTitle"] = JobTitle[i]
-                else:
-                    items["JobTitle"] = None
+                detail_page_text = requests.get(url=DetailUrl, headers=headers).content.decode('utf-8')
+                detail_tree = etree.HTML(detail_page_text)
 
-                Company = li.xpath('//*[@class="listing-company-name"]/text()')
-                print(type(Company))
+                Company = detail_tree.xpath("//*[@id='content']/div/section/article/h1/span[1]/span/text()[3]")
+                Company = [x.strip() for x in Company if x.strip() != '']
                 if Company:
-                    items["Company"] = Company[i]
+                    items["Company"] = Company
                 else:
                     items["Company"] = None
 
-                PostDate = li.xpath('//*[@class="listing-posted"]/time/text()')
-                if PostDate:
-                    items["PostDate"] = PostDate[i]
-                else:
-                    items["PostDate"] = None
+                for a in Company:
+                    Fromwhere = detail_tree.xpath('//*[@id="content"]/div/section/article/h1/span[2]/a/text()')
+                    print(Fromwhere)
 
-                Location = li.xpath('//*[@class="listing-location"]/a/text()')
-                if Location:
-                    items["Location"] = Location[i]
-                else:
-                    items["Location"] = None
-                # FromWhere = li.xpath('')
-                CrawledTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-                if CrawledTime:
-                    items["CrawledTime"] = CrawledTime
-                else:
-                    items["CrawledTime"] = None
+                    PostDate = detail_tree.xpath('//*[@class="listing-posted"]/time/text()')
+                    if PostDate:
+                        items["PostDate"] = PostDate
+                    else:
+                        items["PostDate"] = None
 
-            with open('python.org.csv', 'a', encoding='utf-8') as fp:
-                fp.write(str(items))
-                fp.close()
-                print(items)
-                print("保存成功")
+                    Location = detail_tree.xpath('//*[@class="listing-location"]/a/text()')
+                    print(Location)
+                    if Location:
+                        items["Location"] = Location
+                    else:
+                        items["Location"] = None
+                    CrawledTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                    if CrawledTime:
+                        items["CrawledTime"] = CrawledTime
+                    else:
+                        items["CrawledTime"] = None
+
+                    with open('python.org.csv', 'a') as fp:
+                        fp.write(str(items))
+                        fp.close()
+                        print(items)
+                        print("保存成功")
     def run(self):
         # 页的信息
         for pg in range(1, 2):
