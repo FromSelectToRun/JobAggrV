@@ -1,0 +1,79 @@
+
+containers:
+  jobaggrv-mysql:
+    image: mysql:8-debian
+    environment:
+      MYSQL_ROOT_PASSWORD: jobaggrv
+      MYSQL_USER: jobaggrv
+      MYSQL_PASSWORD: jobaggrv
+      MYSQL_DATABASE: jobaggrv
+    ports:
+      - 33060:3306
+    volumes:
+      - "db-vol:/var/lib/mysql:rw"
+  
+  jobaggrv-scrapy:
+    build_directory: .
+    dockerfile: ./Dockerfile
+    build_args:
+      PIP_INDEX: https://pypi.tuna.tsinghua.edu.cn/simple
+    volumes:
+      - './JobAggrV/conf/config.ini.example:/opt/jobaggrv/JobAggrV/conf/config.ini'
+
+tasks:
+  crawl:
+    description: Serve the scrapy application standingalone
+    run:
+      container: jobaggrv-scrapy 
+      entrypoint: python3 -m scrapy crawl  
+    dependencies:
+      - jobaggrv-mysql
+    group: scrapy
+  test:
+    description: Serve the onerc application standingalone
+    run:
+      container: jobaggrv-scrapy 
+      entrypoint: python3 -m scrapy check  
+    dependencies:
+      - jobaggrv-mysql
+    group: scrapy
+  shell:
+    description: Serve the onerc application standingalone
+    run:
+      container: jobaggrv-scrapy 
+      entrypoint: python3 -m scrapy shell
+    dependencies:
+      - jobaggrv-mysql
+    group: scrapy
+  bash:
+    description: Serve the onerc application standingalone
+    run:
+      container: jobaggrv-scrapy 
+      entrypoint: bash 
+    dependencies:
+      - jobaggrv-mysql
+    group: scrapy
+  migrate:
+    description: Serve the onerc application standingalone
+    run:
+      container: jobaggrv-scrapy 
+      entrypoint: alembic upgrade head 
+    dependencies:
+      - jobaggrv-mysql
+    group: alembic
+  scrapy:
+    description: Serve the onerc application standingalone
+    run:
+      container: jobaggrv-scrapy 
+      entrypoint: alembic  
+    dependencies:
+      - jobaggrv-mysql
+    group: alembic
+  scrapy:
+    description: Serve the onerc application standingalone
+    run:
+      container: jobaggrv-scrapy 
+      entrypoint: python3 -m scrapy
+    dependencies:
+      - jobaggrv-mysql
+    group: scrapy
