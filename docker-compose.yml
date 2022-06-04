@@ -11,3 +11,14 @@ services:
       MYSQL_DATABASE: jobaggrv
     ports:
       - 33060:3306
+    volumes:
+      - "db-vol:/var/lib/mysql:rw"
+  
+  jobaggrv-scrapy:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    volumes:
+      - './JobAggrV/conf/config.ini.example:/opt/jobaggrv/JobAggrV/conf/config.ini' 
+volumes:
+  db-vol:

@@ -1,4 +1,5 @@
-[mysql]
+[database]
+type = mysql
 host = jobaggrv-mysql
 port = 3306
 name = jobaggrv
