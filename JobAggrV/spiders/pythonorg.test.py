@@ -8,13 +8,11 @@ import random
 url = 'https://www.python.org/jobs/'
 headers = {
     'User_Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.62 Safari/537.36',
-
     }
 response = requests.get(url, headers=headers).content.decode('utf-8')
 p = etree.HTML(response)
-a_list = p.xpath("//*[@id='content']/div/section/div")[0]
+a_list = p.xpath("//*[@id='content']/div/section/div")
 items = {}
-
 for a in a_list:
     JobTitle = a.xpath('//*[@class="listing-company-name"]/a/text()')[0]
     if JobTitle:
@@ -31,14 +29,14 @@ for a in a_list:
     detail_page_text = requests.get(url=DetailUrl, headers=headers).content.decode('utf-8')
     detail_tree = etree.HTML(detail_page_text)
 
-    Company = detail_tree.xpath("//*[@id='content']/div/section/article/h1/span[1]/span/text()[3]")
-    Company = [x.strip() for x in Company if x.strip() != '']
+    Company = a.xpath('//*[@id="content"]/div/section/div/ol/li/h2/span/text()[3]')[0]
+
     if Company:
         items["Company"] = Company
     else:
         items["Company"] = None
 
-    FromWhere = detail_tree.xpath('//*[@id="content"]/div/section/article/div[1]/ul[7]/li[2]/a/text()')
+    FromWhere = detail_tree.xpath('//*[@id="content"]/div/section/article/div/ul/li[3]/a/text()')
     if FromWhere:
         items["FromWhere"] = FromWhere
     else:
