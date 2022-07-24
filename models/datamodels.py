@@ -18,5 +18,6 @@ class JobRawData(Base):
     category = Column('category',String)
     extra = Column('extra',Text)
     raw = Column('raw',Text)
-
+    salary = Column('salary',String)
+    
 

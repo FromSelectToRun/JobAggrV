@@ -9,8 +9,8 @@ containers:
       MYSQL_DATABASE: jobaggrv
     ports:
       - 33060:3306
-    volumes:
-      - "db-vol:/var/lib/mysql:rw"
+        #volumes:
+        #  - "db-vol:/var/lib/mysql:rw"
   
   jobaggrv-scrapy:
     build_directory: .
@@ -18,7 +18,18 @@ containers:
     build_args:
       PIP_INDEX: https://pypi.tuna.tsinghua.edu.cn/simple
     volumes:
-      - './JobAggrV/conf/config.ini.example:/opt/jobaggrv/JobAggrV/conf/config.ini'
+      - './:/opt/jobaggrv/'
+
+  jobaggrv-api:
+    build_directory: .
+    dockerfile: ./Dockerfile
+    entrypoint: gunicorn  --worker-class gevent -w 4 --worker-connections 1000 -b 0.0.0.0:8000 'jobaggrv_api.app:app'
+    ports: 
+      - 8000:8000
+    build_args:
+      PIP_INDEX: https://pypi.tuna.tsinghua.edu.cn/simple
+    volumes:
+      - './:/opt/jobaggrv/'
 
 tasks:
   crawl:
@@ -37,7 +48,7 @@ tasks:
     dependencies:
       - jobaggrv-mysql
     group: scrapy
-  shell:
+  scrapy-shell:
     description: Serve the onerc application standingalone
     run:
       container: jobaggrv-scrapy 
@@ -48,7 +59,7 @@ tasks:
   bash:
     description: Serve the onerc application standingalone
     run:
-      container: jobaggrv-scrapy 
+      container: jobaggrv-api 
       entrypoint: bash 
     dependencies:
       - jobaggrv-mysql
@@ -61,14 +72,14 @@ tasks:
     dependencies:
       - jobaggrv-mysql
     group: alembic
-  scrapy:
-    description: Serve the onerc application standingalone
-    run:
-      container: jobaggrv-scrapy 
-      entrypoint: alembic  
-    dependencies:
-      - jobaggrv-mysql
-    group: alembic
+      #scrapy:
+      #  description: Serve the onerc application standingalone
+      #  run:
+      #    container: jobaggrv-scrapy 
+      #    entrypoint: alembic  
+      #  dependencies:
+      #    - jobaggrv-mysql
+      #  group: alembic
   scrapy:
     description: Serve the onerc application standingalone
     run:
@@ -77,3 +88,18 @@ tasks:
     dependencies:
       - jobaggrv-mysql
     group: scrapy
+  jobaggrv-api-run:
+    description: Serve the onerc application standingalone
+    run:
+      container: jobaggrv-api
+    dependencies:
+      - jobaggrv-mysql
+    group: jobaggrv-api
+  jobaggrv-api-serve:
+    description: Serve the onerc application standingalone
+    run:
+      container: jobaggrv-api
+      entrypoint: flask run -h 0.0.0.0 -p 8000 --reload --debugger 
+    dependencies:
+      - jobaggrv-mysql
+    group: jobaggrv-api
