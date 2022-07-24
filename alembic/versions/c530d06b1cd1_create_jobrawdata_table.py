@@ -27,6 +27,7 @@ def upgrade():
      Column('crawled_time',DateTime),
      Column('post_time',DateTime),
      Column('category',String(512)),
+     Column('salary',String),
      Column('extra',Text),
      Column('raw',Text),
      )
